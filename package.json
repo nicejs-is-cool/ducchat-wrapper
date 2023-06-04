@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepublish": "tsc"
   },
   "keywords": [],
   "author": "",
@@ -16,5 +17,6 @@
   "dependencies": {
     "socket.io-client": "^4.6.2"
   },
-  "type": "module"
+  "type": "module",
+  "types": "./dist/index.d.ts"
 }
