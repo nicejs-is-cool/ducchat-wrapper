@@ -16,7 +16,10 @@ client.once('contacts', () => {
 
 client.on('message', async (msg: Message) => {
 	if (msg.message === "hello") {
-		console.log(await client.SendMessage(msg.sentBy, "Hello there!"));
+		await client.SendMessage(msg.sentBy, "Hello there!\nSend **amogus** for sus.");
+	}
+	if (msg.message === "amogus") {
+		await client.SendMessage(msg.sentBy, "Sus.");
 	}
 })
 

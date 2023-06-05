@@ -55,7 +55,7 @@ export default class Client extends EventEmitter {
 		})
 		this.io.on('newMessage', (msg: Message) => {
 			//console.log(msg);
-			console.log(msg);
+			// console.log(msg);
 			if (!this.auth) throw 'You need to add a authenticator with <Client>.UseAuthenticator(...) first'
 			this.emit("message", {
 				username: msg.username,
@@ -93,7 +93,7 @@ export default class Client extends EventEmitter {
 		});
 	}
 	async SendMessage(username: string, message: string): Promise<boolean> {
-		console.log(username, message);
+		//console.log(username, message);
 		if (!this.auth) throw 'You need to add a authenticator with <Client>.UseAuthenticator(...) first'
 		const myhist = this.auth.keychain.EncryptMessage(message);
 		const userhist = this.auth.UserEncryptMessage(await this.GetUserPublicKey(username), message);
