@@ -92,12 +92,17 @@ export default class Client extends EventEmitter {
 			username
 		});
 	}
-	async SendMessage(username: string, message: string): Promise<boolean> {
+	async SendMessage(username: string, message: string, skipEncryption: boolean = false): Promise<boolean> {
 		//console.log(username, message);
 		if (!this.auth) throw 'You need to add a authenticator with <Client>.UseAuthenticator(...) first'
+		if (!(await this.IsFriend(username))) return false;
+		if (skipEncryption) {
+			this.LL_SendMessage(message, message, username);
+			return true;
+		}
 		const myhist = this.auth.keychain.EncryptMessage(message);
 		const userhist = this.auth.UserEncryptMessage(await this.GetUserPublicKey(username), message);
-		if (!(await this.IsFriend(username))) return false;
+		
 		this.LL_SendMessage(myhist, userhist, username);
 		return true;
 	}
