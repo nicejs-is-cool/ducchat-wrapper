@@ -7,3 +7,4 @@ export const Authenticator = _Authenticator
 export { AuthenticationError } from './auth.js';
 export { Message } from './client.js'
 export const Keychain = _Keychain;
+export { Util } from './util.js'
