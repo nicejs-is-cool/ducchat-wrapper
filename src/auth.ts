@@ -8,11 +8,7 @@ export class AuthenticationError extends Error {
 	}
 }
 export default class Authenticator {
-	public keychain: Keychain;
-	constructor(public client: Client) {}
-	ImportKeychain(keychain: Keychain) {
-		this.keychain = keychain;
-	}
+	constructor(public client: Client, public keychain: Keychain) {}
 	GetEncryptedSecret() {
 		if (!this.keychain) throw new AuthenticationError("Missing keychain");
 		return this.keychain.GetIEncryptedSecret(this.client.server)

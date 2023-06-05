@@ -3,9 +3,8 @@ import Authenticator from "./auth.js";
 import Keychain from "./keychain.js";*/
 import { Client, Message, Authenticator, Keychain } from './index.js';
 const client = new Client("https://ducchat.pcprojects.tk")
-const keychain = await Keychain.LoadFromFile("./KEEP_SECRET.key", "./SEND_TO_SERVER.key");
-const auth = new Authenticator(client);
-auth.ImportKeychain(keychain);
+const auth = new Authenticator(client, await Keychain.LoadFromFile("./KEEP_SECRET.key", "./SEND_TO_SERVER.key"));
+
 client.UseAuthenticator(auth);
 client.LoginWithToken(await auth.GetEncryptedSecret())
 

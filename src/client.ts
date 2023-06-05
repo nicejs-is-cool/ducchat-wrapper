@@ -1,6 +1,6 @@
 import io, { Socket } from 'socket.io-client';
 import * as crypto from 'crypto';
-import Authenticator from './auth';
+import Authenticator from './auth.js';
 import EventEmitter from 'events';
 
 export interface RawMessage {
@@ -19,10 +19,17 @@ export interface Message {
 	locale: 'en' | 'ru';
 }
 
+export class RequestFailed extends Error {
+	constructor(public status: number, public status_text: string, public additional?: string) {
+		super(`Request failed with status ${status} ${status_text}${additional ? " "+additional : ""}`);
+		this.name = "RequestFailed";
+	}
+}
+
 export default class Client extends EventEmitter {
-	private token: string;
-	private io: Socket;
-	private auth: Authenticator;
+	private token: string = "";
+	private io?: Socket;
+	private auth?: Authenticator;
 	public contacts: string[] = [];
 	public publicKeyStore = new Map<string, string>();
 	constructor(public server: string) { super() }
@@ -45,6 +52,7 @@ export default class Client extends EventEmitter {
 		this.io.on('newMessage', (msg: Message) => {
 			//console.log(msg);
 			console.log(msg);
+			if (!this.auth) throw 'You need to add a authenticator with <Client>.UseAuthenticator(...) first'
 			this.emit("message", {
 				username: msg.username,
 				message: this.auth.keychain.DecryptMessage(msg.message),
@@ -73,6 +81,7 @@ export default class Client extends EventEmitter {
 		return lol;
 	}
 	LL_SendMessage(myhist: string, userhist: string, username: string) {
+		if (!this.io) throw 'You need to call <Client>.Connect(); first.';
 		this.io.emit('sendMessage', {
 			"message-myhist": myhist,
 			"message-userhist": userhist,
@@ -81,6 +90,7 @@ export default class Client extends EventEmitter {
 	}
 	async SendMessage(username: string, message: string): Promise<boolean> {
 		console.log(username, message);
+		if (!this.auth) throw 'You need to add a authenticator with <Client>.UseAuthenticator(...) first'
 		const myhist = this.auth.keychain.EncryptMessage(message);
 		const userhist = this.auth.UserEncryptMessage(await this.GetUserPublicKey(username), message);
 		if (!(await this.IsFriend(username))) return false;
@@ -93,5 +103,46 @@ export default class Client extends EventEmitter {
 				Cookie: `token=${this.token}`
 			}
 		}).then(resp => resp.json());
+	}
+	FetchFriends() {
+		return fetch(`${this.server}/api/friends`, {
+			headers: {
+				Cookie: `token=${this.token}`
+			}
+		});
+	}
+	RemoveFriend(username: string) {
+		return fetch(`${this.server}/api/removeFromFriends?username=${encodeURIComponent(username)}`, {
+			headers: {
+				Cookie: `token=${this.token}`
+			}
+		});
+	}
+	private AddToFriends(usetoken: boolean, x: string) {
+		return fetch(`${this.server}/api/addToFriends?${usetoken ? "friendToken" : "username"}=${encodeURIComponent(x)}`, {
+			headers: {
+				Cookie: `token=${this.token}`
+			}
+		});
+	}
+	AcceptFriendToken(token: string) {
+		return this.AddToFriends(true, token);
+	}
+	SendFriendRequest(username: string) {
+		return this.AddToFriends(false, username);
+	}
+	private FetchSuggestedFriends() {
+		return fetch(`${this.server}/api/friendTokens`, {
+			headers: {
+				Cookie: `token=${this.token}`
+			}
+		})
+	}
+	GetSuggestedFriends() {
+		return this.FetchSuggestedFriends()
+			.then(async resp => {
+				if (!resp.ok) throw new RequestFailed(resp.status, resp.statusText, await resp.text());
+				return resp.text();
+			})
 	}
 }
