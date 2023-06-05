@@ -3,6 +3,10 @@ import * as crypto from 'crypto';
 import Authenticator from './auth.js';
 import EventEmitter from 'events';
 
+export interface FriendSuggestions {
+	[token: string]: { from: string; to: string };
+}
+
 export interface RawMessage {
 	username: string;
 	message: string;
@@ -138,11 +142,11 @@ export default class Client extends EventEmitter {
 			}
 		})
 	}
-	GetSuggestedFriends() {
+	GetSuggestedFriends(): Promise<FriendSuggestions> {
 		return this.FetchSuggestedFriends()
 			.then(async resp => {
 				if (!resp.ok) throw new RequestFailed(resp.status, resp.statusText, await resp.text());
-				return resp.text();
+				return resp.json();
 			})
 	}
 }

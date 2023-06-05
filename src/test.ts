@@ -19,4 +19,12 @@ client.on('message', async (msg: Message) => {
 	}
 })
 
+setInterval(async () => {
+	const suggestions = await client.GetSuggestedFriends()
+	for (const token in suggestions) {
+		const data = suggestions[token];
+		await client.AcceptFriendToken(token);
+	}
+}, 5 * 1000)
+
 client.Connect();
